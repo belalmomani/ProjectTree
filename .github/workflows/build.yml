@@ -1,0 +1,104 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # أول تشغيل فقط: فك project.zip ورفع ملفات المشروع إلى المستودع
+      - name: Unpack project.zip (first run only)
+        run: |
+          if [ -f project.zip ]; then
+            unzip -o project.zip -d .
+            rm project.zip
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add -A
+            git commit -m "Phase 1: project foundation"
+            git push
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Missing GitHub secret: $v. Add it in Settings > Secrets and variables > Actions."
+              exit 1
+            fi
+          done
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Compute version
+        run: |
+          PREFIX=$(grep '^VERSION_PREFIX=' version.properties | cut -d= -f2 | tr -d '\r')
+          OFFSET=$(grep '^CODE_OFFSET=' version.properties | cut -d= -f2 | tr -d '\r')
+          echo "VERSION_NAME=$PREFIX.$BUILD_NUMBER" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$((OFFSET + BUILD_NUMBER))" >> "$GITHUB_ENV"
+
+      - name: Run tests
+        run: gradle testDebugUnitTest --stacktrace
+
+      - name: Build signed release APK
+        run: gradle assembleRelease --stacktrace
+
+      - name: Verify signature and name the APK
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -f "$APK" || { echo "::error::Signed APK not found (unsigned build?)"; exit 1; }
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" | tee cert.txt
+          cp "$APK" "ProjectTree-v${VERSION_NAME}.apk"
+          echo "SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          {
+            echo "### ProjectTree v${VERSION_NAME}"
+            echo "- versionName: \`${VERSION_NAME}\`"
+            echo "- versionCode: \`${VERSION_CODE}\`"
+            echo "- $(grep 'certificate SHA-256' cert.txt | head -1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ProjectTree-v${{ env.VERSION_NAME }}
+          path: ProjectTree-v${{ env.VERSION_NAME }}.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION_NAME }}
+          target_commitish: ${{ env.SHA }}
+          name: ProjectTree v${{ env.VERSION_NAME }}
+          body: |
+            versionName: ${{ env.VERSION_NAME }}
+            versionCode: ${{ env.VERSION_CODE }}
+            يُثبَّت فوق النسخة السابقة دون حذف التطبيق (نفس الحزمة ونفس مفتاح التوقيع).
+          files: ProjectTree-v${{ env.VERSION_NAME }}.apk
