@@ -18,6 +18,9 @@ class FormViewModel : ViewModel() {
     var description by mutableStateOf("")
     var notes by mutableStateOf("")
 
+    /** نص البرومبت النهائي (قابل للتعديل من المستخدم). */
+    var prompt by mutableStateOf("")
+
     /** questionId -> معرّفات الخيارات المختارة */
     val selections = mutableStateMapOf<String, Set<String>>()
 
@@ -29,8 +32,13 @@ class FormViewModel : ViewModel() {
         type = null
         description = ""
         notes = ""
+        prompt = ""
         selections.clear()
         otherText.clear()
+    }
+
+    fun generatePrompt() {
+        prompt = PromptBuilder.build(this)
     }
 
     fun selectType(id: String) {
