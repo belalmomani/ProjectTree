@@ -17,8 +17,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.belalmomani.projecttree.form.FormViewModel
+import com.belalmomani.projecttree.form.ImportViewModel
 import com.belalmomani.projecttree.ui.FormScreen
 import com.belalmomani.projecttree.ui.HomeScreen
+import com.belalmomani.projecttree.ui.ImportScreen
 import com.belalmomani.projecttree.ui.PromptScreen
 import com.belalmomani.projecttree.ui.ProjectTreeTheme
 
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
 @androidx.compose.runtime.Composable
 private fun AppNav() {
     val vm: FormViewModel = viewModel()
+    val importVm: ImportViewModel = viewModel()
     var screen by rememberSaveable { mutableStateOf("home") }
 
     BackHandler(enabled = screen != "home") {
@@ -56,10 +59,18 @@ private fun AppNav() {
                 screen = "prompt"
             },
         )
-        "prompt" -> PromptScreen(vm = vm, onEdit = { screen = "form" })
-        else -> HomeScreen(onNewProject = {
-            vm.reset()
-            screen = "form"
-        })
+        "prompt" -> PromptScreen(
+            vm = vm,
+            onEdit = { screen = "form" },
+            onImport = { screen = "import" },
+        )
+        "import" -> ImportScreen(vm = importVm, onBack = { screen = "home" })
+        else -> HomeScreen(
+            onNewProject = {
+                vm.reset()
+                screen = "form"
+            },
+            onImport = { screen = "import" },
+        )
     }
 }

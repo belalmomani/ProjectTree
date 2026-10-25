@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +28,7 @@ import com.belalmomani.projecttree.R
 import com.belalmomani.projecttree.ads.BannerAd
 
 @Composable
-fun HomeScreen(onNewProject: () -> Unit) {
+fun HomeScreen(onNewProject: () -> Unit, onImport: () -> Unit) {
     val context = LocalContext.current
     val versionName = remember(context) {
         runCatching {
@@ -58,6 +59,10 @@ fun HomeScreen(onNewProject: () -> Unit) {
             Spacer(Modifier.height(32.dp))
             Button(onClick = onNewProject, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.home_new_project))
+            }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+                Text("استيراد هيكل من JSON")
             }
             Spacer(Modifier.height(24.dp))
             Text(

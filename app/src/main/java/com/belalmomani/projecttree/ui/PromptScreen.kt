@@ -31,7 +31,7 @@ private const val CHATGPT_PKG = "com.openai.chatgpt"
 private const val CLAUDE_PKG = "com.anthropic.claude"
 
 @Composable
-fun PromptScreen(vm: FormViewModel, onEdit: () -> Unit) {
+fun PromptScreen(vm: FormViewModel, onEdit: () -> Unit, onImport: () -> Unit) {
     val context = LocalContext.current
 
     Column(
@@ -91,6 +91,9 @@ fun PromptScreen(vm: FormViewModel, onEdit: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
+        Button(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+            Text("لدي رد الذكاء الاصطناعي: استيراد الهيكل")
+        }
         OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
             Text("تعديل الاختيارات")
         }
