@@ -1,0 +1,14 @@
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+# لا ترفع مفاتيح التوقيع أبدًا
+*.jks
+*.keystore
+keystore*.b64

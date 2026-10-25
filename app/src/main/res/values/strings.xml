@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ProjectTree</string>
+    <string name="home_subtitle">صمّم هيكل مشروعك البرمجي بخطوات بسيطة</string>
+    <string name="home_new_project">إنشاء مشروع جديد</string>
+    <string name="home_coming_soon">هذه الميزة ستُضاف في المرحلة التالية</string>
+    <string name="home_version">الإصدار %1$s</string>
+</resources>
