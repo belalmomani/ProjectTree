@@ -16,6 +16,11 @@ val appVersionName = "${versionProps.getProperty("VERSION_PREFIX")}.$buildNumber
 // بيانات التوقيع تأتي من متغيرات البيئة (GitHub Secrets) فقط
 val keystorePath: String? = System.getenv("KEYSTORE_PATH")
 
+// إعدادات الإعلانات (Start.io) من ads.properties
+val adsProps = Properties().apply {
+    rootProject.file("ads.properties").inputStream().use { load(it) }
+}
+
 android {
     namespace = "com.belalmomani.projecttree"
     compileSdk = 34
@@ -26,6 +31,10 @@ android {
         targetSdk = 34
         versionCode = appVersionCode
         versionName = appVersionName
+
+        buildConfigField("String", "STARTIO_APP_ID", "\"${adsProps.getProperty("STARTIO_APP_ID", "")}\"")
+        buildConfigField("boolean", "ADS_ENABLED", adsProps.getProperty("ADS_ENABLED", "false"))
+        buildConfigField("boolean", "TEST_ADS", adsProps.getProperty("TEST_ADS", "true"))
     }
 
     signingConfigs {
@@ -54,7 +63,10 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
@@ -67,4 +79,6 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
+    implementation("com.startapp:inapp-sdk:5.3.1")
 }

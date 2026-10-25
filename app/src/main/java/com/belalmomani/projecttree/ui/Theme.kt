@@ -8,10 +8,15 @@ import androidx.compose.ui.graphics.Color
 private val ProjectTreeColors = darkColorScheme(
     primary = Color(0xFF22D3EE),
     onPrimary = Color(0xFF062033),
-    background = Color(0xFF0F1B2D),
+    secondaryContainer = Color(0xFF0E4A5A),
+    onSecondaryContainer = Color(0xFFFFFFFF),
+    background = Color(0xFF0C182E),
     onBackground = Color(0xFFFFFFFF),
-    surface = Color(0xFF16263B),
+    surface = Color(0xFF14243C),
     onSurface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFF1B2F4B),
+    onSurfaceVariant = Color(0xFFC5D3E6),
+    outline = Color(0xFF4A6285),
 )
 
 @Composable
